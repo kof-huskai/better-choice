@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پیش‌نویس انتخاب رشته کنکور</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#eaeff3; --card:#ffffff; --ink:#14213d; --mut:#5d6b82; --line:#d3dbe4;
+  --pri:#0f6b66; --pri-d:#0a4f4b; --warn:#b42318; --warn-bg:#fdecea; --hi:#e3f3f1;
+  --field:#ffffff; --row:#ffffff; --rowline:#edf1f5; --hover:#f1f5f8; --nobg:#fbeeee;
+  --badtxt:#6d1313; --badge:#8b1a1a; --track:#b8c2cf; --toastbg:#14213d; --toastfg:#ffffff;
+  --yelbg:#fff3bf; --yel:#c99a06; --yeltxt:#5c4400;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0e151c; --card:#16202a; --ink:#e6edf3; --mut:#9aa8b9; --line:#2b3a49;
+  --pri:#1a9a92; --pri-d:#14827b; --warn:#ff7b6e; --warn-bg:#3a1c1c; --hi:#143a38;
+  --field:#0f1820; --row:#16202a; --rowline:#223140; --hover:#1f2d3a; --nobg:#331a1a;
+  --badtxt:#ffb4ab; --badge:#b3261e; --track:#4a5a6b; --toastbg:#e6edf3; --toastfg:#0e151c;
+  --yelbg:#3b3210; --yel:#d9a81a; --yeltxt:#f3d77a;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Vazirmatn","Vazir","IRANSans","Tahoma","Segoe UI",sans-serif;line-height:1.7;font-size:15px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 2px}
+.sub{color:var(--mut);margin:0 0 14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.panel h2{font-size:16px;margin:0 0 8px}
+button,.btn{font:inherit;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover{background:var(--hover)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+.primary{background:var(--pri);border-color:var(--pri);color:#fff}
+.primary:hover{background:var(--pri-d)}
+input[type=text],input[type=search],select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--field);color:var(--ink);min-width:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grow{flex:1 1 220px}
+.status{color:var(--mut);margin-top:8px;font-size:14px}
+.status b{color:var(--ink)}
+.sample{font-size:13px;color:var(--mut);margin-top:6px;white-space:pre-wrap}
+details summary{cursor:pointer;color:var(--mut);margin-top:8px}
+.opts{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:14px;align-items:center}
+
+.results{max-height:230px;overflow:auto;margin-top:8px;border:1px solid var(--line);border-radius:8px}
+.res{display:flex;gap:10px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res .c{font-variant-numeric:tabular-nums;font-weight:700;min-width:64px}
+.res .d{flex:1;font-size:14px}
+.res button{padding:2px 10px;font-size:13px}
+.res.used{background:var(--hi)}
+
+.head,.row{display:grid;grid-template-columns:26px 34px 46px 110px 1fr 26px 112px;gap:6px;align-items:center}
+.head{padding:4px 8px;color:var(--mut);font-size:13px;border-bottom:1px solid var(--line)}
+#stick{position:sticky;top:0;z-index:5;background:var(--card)}
+.row{padding:4px 8px;border-bottom:1px solid var(--rowline);background:var(--row)}
+.row.over{outline:2px dashed var(--pri);background:var(--hi)}
+.row.dup{background:var(--warn-bg)}
+.row.dup .code{border-color:var(--warn);color:var(--warn)}
+.row.sel{background:var(--hi);box-shadow:inset -3px 0 0 var(--pri);cursor:grab}
+.row.yel{background:var(--yelbg)}
+.row.yel .desc{color:var(--yeltxt);font-weight:600}
+.row .desc{padding:4px 6px;line-height:1.7;overflow-wrap:anywhere;min-width:0}
+.warn.yel{background:#a16207;color:#fff}
+.split{display:flex;gap:14px;align-items:flex-start}
+.split .main{flex:1 1 0;min-width:0}
+.excl{flex:0 0 40%;max-width:460px;background:var(--yelbg);border:1px solid var(--yel);border-radius:8px;padding:10px 12px;max-height:380px;overflow:auto;font-size:13px;color:var(--yeltxt)}
+.excl[hidden]{display:none}
+.excl h3{margin:0 0 4px;font-size:14px}
+.excl ol{margin:6px 0 0;padding-inline-start:20px}
+.excl li{margin-bottom:10px}
+.excl .meta{display:block;font-size:12px;opacity:.85;margin-top:2px}
+.excl label{display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;margin-top:2px}
+@media (max-width:800px){.split{flex-direction:column}.excl{flex-basis:auto;max-width:none;width:100%}}
+.credit{font-size:12px;color:var(--mut);text-align:center;margin:0 0 2px;font-family:Tahoma,'Segoe UI',sans-serif}
+.credit a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--mut)}
+.credit a:hover{color:var(--pri);border-bottom-color:var(--pri)}
+#toTop{position:fixed;bottom:18px;left:18px;width:44px;height:44px;border-radius:50%;background:var(--pri);color:#fff;border:0;font-size:20px;line-height:1;cursor:pointer;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;z-index:9;box-shadow:0 2px 8px rgba(0,0,0,.3);padding:0}
+#toTop.on{opacity:1;visibility:visible}
+.row.dragging{opacity:.45}
+.row.ov-t{box-shadow:inset 0 3px 0 var(--pri)}
+.row.ov-b{box-shadow:inset 0 -3px 0 var(--pri)}
+.row input.selbox,.head input.selbox{width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--pri)}
+.selbar{padding:8px;border:1px solid var(--pri);border-radius:8px;margin:0 0 6px;background:var(--hi);gap:6px}
+.selbar[hidden]{display:none}
+.selbar button{padding:4px 10px;font-size:13px}
+.selbar .cnt{font-weight:700;margin-inline-end:6px}
+.selbar input[type=text]{width:64px;text-align:center;padding:4px 6px}
+.selbar .danger{color:var(--warn)}
+body.wide .wrap{max-width:none;padding:16px 24px}
+.handle{cursor:grab;text-align:center;color:var(--mut);user-select:none;font-size:18px}
+.num{color:var(--mut);font-variant-numeric:tabular-nums;text-align:center}
+.row input{width:100%}
+.code{direction:ltr;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.acts{display:flex;gap:4px;justify-content:flex-end}
+.acts button{padding:2px 8px;line-height:1.5}
+.acts .del{color:var(--warn)}
+.warn{width:22px;height:22px;border-radius:50%;background:var(--badge);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;cursor:help;visibility:hidden;user-select:none}
+.warn.on{visibility:visible}
+.warn::after{content:attr(data-tip);position:absolute;top:130%;left:0;background:#2b0a0a;color:#fff;padding:6px 10px;border-radius:6px;font-weight:400;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.warn:hover::after,.warn:focus::after{opacity:1}
+.row.bad .desc{color:var(--badtxt)}
+
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:14px}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch .track{width:42px;height:24px;border-radius:12px;background:var(--track);position:relative;transition:background .15s;flex:none}
+.switch .track::after{content:'';position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked ~ .track{background:var(--pri)}
+.switch input:checked ~ .track::after{transform:translateX(-18px)}
+.switch input:focus-visible ~ .track{outline:2px solid var(--pri);outline-offset:2px}
+#karWrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .28s ease}
+#karWrap.off{grid-template-rows:0fr}
+#karBody{overflow:hidden;min-height:0;padding:2px}
+#karWrap.off #karBody{visibility:hidden;transition:visibility 0s .28s}
+@media (prefers-reduced-motion:reduce){#karWrap{transition:none}}
+.permgroup{margin-top:12px}
+.permgroup h3{font-size:14px;margin:0 0 2px;color:var(--mut);font-weight:600}
+.permgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+.permgrid label{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:14px}
+.permgrid label.no{border-color:var(--badge);background:var(--nobg)}
+#list{max-height:none}
+
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--toastbg);color:var(--toastfg);padding:8px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+#toast.on{opacity:1}
+
+#printArea{display:none}
+@media (max-width:640px){
+  .head,.row{grid-template-columns:24px 28px 34px 84px 1fr 24px}
+  .head .hact{display:none}
+  .row .acts{grid-column:1 / -1;justify-content:flex-start}
+}
+@page{size:A4;margin:12mm 10mm 14mm;@bottom-center{content:"صفحه " counter(page,persian) " از " counter(pages,persian);font:8pt Tahoma,sans-serif;color:#666}}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  :root,:root[data-theme="dark"]{color-scheme:light !important;background:#fff !important}
+  html,body{background:#fff !important;color:#111 !important}
+  .wrap{display:none}
+  #toast,#toTop{display:none}
+  #printArea{display:block;background:#fff;color:#111;padding:0;font-size:9.5pt;line-height:1.5}
+  #printArea .phead{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #0f6b66;padding-bottom:6px;margin-bottom:8px}
+  #printArea .pt{font-size:15pt;font-weight:700;color:#0f6b66}
+  #printArea .pm{font-size:9pt;color:#444}
+  #printArea .pm span+span::before{content:"  ·  ";color:#999}
+  #printArea table{width:100%;border-collapse:collapse;table-layout:fixed}
+  #printArea thead{display:table-header-group}
+  #printArea th{background:#0f6b66;color:#fff;font-weight:600;font-size:9pt;padding:4px 6px;text-align:right}
+  #printArea th.n,#printArea th.c{text-align:center}
+  #printArea td{padding:2.2px 6px;border-bottom:1px solid #d9e1e8;vertical-align:top;text-align:right;overflow-wrap:anywhere}
+  #printArea tbody tr:nth-child(even) td{background:#f4f8fa}
+  #printArea tr{page-break-inside:avoid}
+  #printArea td.n,#printArea td.c{text-align:center;white-space:nowrap}
+  #printArea td.n{color:#666}
+  #printArea td.c{font-weight:700;letter-spacing:.3px}
+  #printArea td.f{font-weight:400}
+  #printArea tr.y td{background:#fff3bf !important}
+  #printArea tr.r td{background:#fbe3e0 !important}
+  .pmark{display:inline-block;width:14px;height:14px;line-height:14px;border-radius:50%;background:#8b1a1a;color:#fff;text-align:center;font-weight:700;font-size:9px;margin-inline-start:5px}
+  .pmark.y{background:#d4a017;color:#000}
+  #printArea .legend{margin-top:8px;font-size:8.5pt;color:#444}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="credit" dir="ltr">GrayOw1 from <a href="https://t.me/familyKral" target="_blank" rel="noopener noreferrer">t.me/familyKral</a></div>
+  <div class="bar" style="justify-content:space-between">
+    <h1>پیش‌نویس انتخاب رشته</h1>
+    <div class="bar" style="margin-inline-start:auto;gap:14px">
+      <label class="switch" title="حالت عریض: صفحه تمام عرض نمایشگر را می‌گیرد">
+        <span>حالت عریض</span>
+        <input type="checkbox" id="wideSw">
+        <span class="track"></span>
+      </label>
+      <button id="themeBtn" type="button"></button>
+    </div>
+  </div>
+  <p class="sub">فایل دفترچه را بارگذاری کنید، رشته‌ها را پیدا و اضافه کنید، ترتیب را عوض کنید و خروجی PDF بگیرید.</p>
+
+  <section class="panel">
+    <h2>۱. بارگذاری دفترچه</h2>
+    <div class="split"><div class="main">
+    <div class="bar">
+      <input type="file" id="file" accept=".pdf,.txt,.csv">
+      <button class="primary" id="scanBtn">اسکن فایل</button>
+    </div>
+    <div class="opts">
+      <label>تعداد ارقام کد رشته‌محل
+        <select id="digits">
+          <option value="4-7">خودکار</option>
+          <option value="4-4">۴ رقم</option>
+          <option value="5-5">۵ رقم</option>
+          <option value="6-6">۶ رقم</option>
+          <option value="7-7">۷ رقم</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="rev"> حروف فارسی برعکس خوانده می‌شود</label>
+      <label><input type="checkbox" id="fmt" checked> جدا کردن اطلاعات با |</label>
+    </div>
+    <div class="bar" style="margin-top:10px">
+      <input type="text" id="chk" inputmode="numeric" placeholder="کد برای بررسی، مثلاً ۳۲۲۸۷" style="width:200px">
+      <button id="chkBtn">بررسی یک کد</button>
+    </div>
+    <div class="sample" id="chkOut"></div>
+    <div class="status" id="scanStatus">هنوز فایلی اسکن نشده است.</div>
+    <div class="sample" id="sample"></div>
+    <details>
+      <summary>راهنما</summary>
+      <div class="status">
+        برنامه هر سطر دفترچه را می‌خواند و عددی را که شبیه کد رشته‌محل است جدا می‌کند و باقی سطر را به‌عنوان عنوان نگه می‌دارد.
+        اگر نتیجه اسکن درست نبود، تعداد ارقام کد را تنظیم کنید یا گزینه‌ی برعکس را بزنید و دوباره اسکن کنید.
+        فایل‌هایی که فقط عکس هستند (اسکن کاغذی) متن ندارند و خوانده نمی‌شوند.
+        اطلاعات اسکن‌شده و پیش‌نویس شما در همین مرورگر ذخیره می‌شود.
+      </div>
+    </details>
+  </div>
+    <aside class="excl" id="excl" hidden></aside></div>
+  </section>
+
+  <section class="panel">
+    <div class="bar" style="justify-content:space-between;margin-bottom:8px">
+      <h2 style="margin:0">۲. کارنامه و مجوزها</h2>
+      <label class="switch" style="margin-inline-start:auto" aria-label="استفاده از کارنامه" title="استفاده از کارنامه — با خاموش کردن، هیچ علامتی روی رشته‌ها نمی‌آید">
+        <input type="checkbox" id="useKar" checked>
+        <span class="track"></span>
+      </label>
+    </div>
+    <div id="karWrap"><div id="karBody">
+      <div class="bar">
+        <input type="file" id="kfile" accept=".pdf,.txt,.png,.jpg,.jpeg,.webp">
+        <button class="primary" id="kBtn">خواندن کارنامه</button>
+      </div>
+      <div class="status" id="kStatus">فایل کارنامه (PDF یا عکس) را بدهید. جدول «وضعیت مجاز به انتخاب رشته» خوانده می‌شود و رشته‌های غیرمجاز علامت قرمز می‌گیرند. اگر کارنامه عکس باشد، متن آن با تشخیص خودکار خوانده می‌شود (بار اول چند ثانیه طول می‌کشد و به اینترنت نیاز دارد).</div>
+      <div class="opts">
+        <label>جنسیت شما
+          <select id="gender">
+            <option value="">نامشخص</option>
+            <option value="زن">زن</option>
+            <option value="مرد">مرد</option>
+          </select>
+        </label>
+      </div>
+      <div id="perm"></div>
+      <details>
+        <summary>نتیجه‌ی خواندن کارنامه</summary>
+        <div class="sample" id="kLines"></div>
+      </details>
+    </div></div>
+  </section>
+
+  <section class="panel">
+    <h2>۳. جستجو و افزودن</h2>
+    <div class="bar">
+      <input type="search" id="q" class="grow" placeholder="کد، نام رشته یا دانشگاه را بنویسید…">
+    </div>
+    <div class="results" id="results" hidden></div>
+    <div class="status" id="qStatus"></div>
+  </section>
+
+  <section class="panel">
+    <h2>۴. پیش‌نویس (۱۵۰ ردیف)</h2>
+    <div class="bar" style="margin-bottom:10px">
+      <input type="text" id="owner" class="grow" placeholder="نام شما برای سربرگ چاپ (اختیاری)">
+      <button class="primary" id="printBtn">چاپ / ذخیره PDF</button>
+      <button id="exportBtn">ذخیره پشتیبان</button>
+      <button id="importBtn">بازیابی پشتیبان</button>
+      <button id="clearBtn">پاک کردن همه</button>
+      <input type="file" id="importFile" accept=".json" hidden>
+    </div>
+    <div class="status" id="draftStatus" style="margin:0 0 8px"></div>
+    <div id="stick">
+    <div class="bar selbar" id="selbar" hidden>
+      <span class="cnt" id="selCnt"></span>
+      <button data-sel="up" title="یک ردیف بالا">▲ بالا</button>
+      <button data-sel="down" title="یک ردیف پایین">▼ پایین</button>
+      <button data-sel="top">به اول لیست</button>
+      <button data-sel="endfilled">به آخر ردیف‌های پر</button>
+      <input type="text" id="selTo" inputmode="numeric" placeholder="ردیف" aria-label="شماره ردیف مقصد">
+      <button data-sel="to">انتقال به این ردیف</button>
+      <button data-sel="gather" title="ردیف‌های انتخاب‌شده را پشت سر هم، از جای اولین ردیف انتخابی، می‌چیند">کنار هم بچین</button>
+      <button data-sel="del" class="danger">حذف انتخاب‌شده</button>
+      <button data-sel="clear">لغو انتخاب</button>
+    </div>
+    <div class="head">
+      <span><input type="checkbox" class="selbox" id="selAll" title="انتخاب همه ردیف‌های پر" aria-label="انتخاب همه"></span><span></span><span style="text-align:center">ردیف</span><span style="text-align:center">کد</span><span>عنوان رشته و دانشگاه</span><span></span><span class="hact" style="text-align:left">عملیات</span>
+    </div>
+    </div>
+    <div id="list"></div>
+  </section>
+</div>
+
+<button id="toTop" type="button" aria-label="برگشت به بالا" title="برگشت به بالا">▲</button>
+<div id="printArea"></div>
+<div id="toast"></div>
+
+<script>
+(function(){
+const N = 150;
+const K_DRAFT = 'entekhab_draft_v1', K_CAT = 'entekhab_catalog_v1', K_OWNER = 'entekhab_owner_v1';
+const $ = id => document.getElementById(id);
+
+/* ---------- wide mode ---------- */
+(function(){
+  let w = false;
+  try{ w = localStorage.getItem('entekhab_wide') === '1'; }catch(e){}
+  const sw = document.getElementById('wideSw');
+  sw.checked = w; document.body.classList.toggle('wide', w);
+  sw.addEventListener('change', () => {
+    document.body.classList.toggle('wide', sw.checked);
+    try{ localStorage.setItem('entekhab_wide', sw.checked ? '1' : '0'); }catch(e){}
+  });
+})();
+
+/* ---------- theme ---------- */
+const K_THEME = 'entekhab_theme';
+function applyTheme(t){
+  document.documentElement.dataset.theme = t;
+  $('themeBtn').textContent = t === 'dark' ? '☀ حالت روشن' : '☾ حالت تاریک';
+}
+(function initTheme(){
+  let t = '';
+  try{ t = localStorage.getItem(K_THEME) || ''; }catch(e){}
+  if(t !== 'dark' && t !== 'light') t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  applyTheme(t);
+  $('themeBtn').addEventListener('click', () => {
+    t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(t);
+    try{ localStorage.setItem(K_THEME, t); }catch(e){}
+  });
+})();
+
+let slots = Array.from({length:N}, () => ({code:'', desc:'', auto:false}));
+let catalog = [];
+let byCode = new Map();
+let lastLines = [];
+const sel = new Set();
+let lastSel = null;
+let exclusions = [];
+const K_EXC = 'entekhab_excl_v1';
+
+/* ---------- helpers ---------- */
+const faDigits = '۰۱۲۳۴۵۶۷۸۹', arDigits = '٠١٢٣٤٥٦٧٨٩';
+function toEn(s){
+  return String(s).replace(/[۰-۹]/g, d => faDigits.indexOf(d)).replace(/[٠-٩]/g, d => arDigits.indexOf(d));
+}
+function toFa(s){ return String(s).replace(/\d/g, d => faDigits[d]); }
+function cleanFa(s){
+  return s.normalize('NFKC').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\u200e\u200f\u202a-\u202e]/g,'').replace(/\s+/g,' ').trim();
+}
+function searchKey(s){
+  return toEn(cleanFa(s)).replace(/\u200c/g,' ').replace(/\s+/g,' ').toLowerCase();
+}
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+/* ---------- persistence ---------- */
+function saveDraft(){
+  try{ localStorage.setItem(K_DRAFT, JSON.stringify(slots)); }catch(e){}
+  updateDraftStatus();
+}
+function saveCatalog(){
+  try{ localStorage.setItem(K_CAT, JSON.stringify(catalog.map(r => ({code:r.code, desc:r.desc})))); return true; }catch(e){ return false; }
+}
+function loadAll(){
+  try{
+    const d = JSON.parse(localStorage.getItem(K_DRAFT) || 'null');
+    if(Array.isArray(d)){
+      d.slice(0,N).forEach((s,i) => { slots[i] = {code:s.code||'', desc:s.desc||'', auto:!!s.auto}; });
+    }
+  }catch(e){}
+  try{
+    const c = JSON.parse(localStorage.getItem(K_CAT) || 'null');
+    if(Array.isArray(c)) setCatalog(c);
+  }catch(e){}
+  try{ $('owner').value = localStorage.getItem(K_OWNER) || ''; }catch(e){}
+  try{ const x = JSON.parse(localStorage.getItem(K_EXC) || 'null'); if(Array.isArray(x)) exclusions = x; }catch(e){}
+}
+function setCatalog(list){
+  catalog = list;
+  byCode = new Map(list.map(r => [r.code, r]));
+  $('scanStatus').innerHTML = list.length
+    ? 'تعداد <b>' + toFa(list.length) + '</b> رشته‌محل در حافظه‌ی برنامه موجود است.'
+    : 'هنوز فایلی اسکن نشده است.';
+  runSearch();
+}
+
+/* ---------- scanning ---------- */
+function digitRange(){
+  const [a,b] = $('digits').value.split('-').map(Number);
+  return new RegExp('^\\d{' + a + ',' + b + '}$');
+}
+function fixItem(s){
+  s = s.normalize('NFKC');
+  if($('rev').checked) s = Array.from(s).reverse().join('');
+  return s;
+}
+const CITY_LIST = ['آبادان','آمل','ابهر','اراک','اردبیل','ارومیه','اسفراین','اسلامشهر','اصفهان','اهواز','ایذه','ایرانشهر','ایلام','بابل','بابلسر','بجنورد','بروجرد','بندرعباس','بندر ماهشهر','بناب','بوشهر','بوکان','بهبهان','بیجار','بیرجند','بینالود','تبریز','تربت جام','تربت حیدریه','تفرش','تنکابن','تهران','جهرم','جیرفت','چابهار','خرم آباد','خرمشهر','خمین','خوی','دامغان','دزفول','دماوند','رامسر','رشت','رفسنجان','زابل','زاهدان','زنجان','ساری','ساوه','سبزوار','سراب','سقز','سمنان','سنندج','سیرجان','شاهرود','شهرضا','شهرکرد','شهریار','شوشتر','شیراز','فسا','فسا','فردوس','فریدونکنار','قائمشهر','قزوین','قم','قوچان','کاشان','کاشمر','کرج','کردکوی','کرمان','کرمانشاه','کیش','گرگان','گرمسار','گنبد کاووس','گناباد','لاهیجان','لنگرود','مراغه','مرند','مریوان','مشهد','مهاباد','ملایر','میانه','نجف آباد','نطنز','نکا','نوشهر','نیشابور','همدان','هرسین','ورامین','یاسوج','یزد','بم','آزادشهر','علی آباد کتول','گچساران','دهدشت','کازرون','لارستان','داراب','ایلام','خرم‌آباد','قشم','اندیمشک','مسجدسلیمان','ملارد','بابلسر','رودهن','پاکدشت','قرچک','شاهین شهر','خمینی شهر','فلاورجان','نجف‌آباد','بهشهر','گلپایگان','محلات','الیگودرز','دورود','نهاوند','تویسرکان','کبودرآهنگ','اسدآباد','بانه','قروه','دیواندره','کامیاران','سرپل ذهاب','اسلام آباد غرب','پارس آباد','مشگین شهر','خلخال','نمین','اهر','سراب','هشترود','شبستر','آذرشهر','اسکو','سلماس','پیرانشهر','نقده','تکاب','شاهیندژ','میاندوآب','خرمدره','بویین زهرا','آبیک','تاکستان'];
+function cityKey(s){ return cleanFa(s).replace(/\u200c/g,' ').replace(/\s+/g,' ').trim(); }
+const CITY_SET = new Set(CITY_LIST.map(cityKey));
+const CITIES_SORTED = [...CITY_SET].sort((a,b) => b.length - a.length);
+const ADM_RE = /(بدون|با)[\s\u200c]*(آزمون|ازمون)/g;
+const TYPE_RE = /شهریه[\s\u200c]*پرداز|نوبت[\s\u200c]*دوم|پردیس[\s\u200c]*خودگردان|غیر[\s\u200c]*انتفاعی|پیام[\s\u200c]*نور|نیمه[\s\u200c]*حضوری|مجازی|شبانه|روزانه|بین[\s\u200c]*الملل/g;
+const UNI_START = /^(دانشگاه|موسسه|مؤسسه|آموزشکده|پردیس|مرکز|دانشکده)/;
+const UNI_ANY = /(دانشگاه|موسسه|مؤسسه|آموزشکده|پردیس|مرکز|دانشکده)/;
+
+const BOTH_RE = /(^|\s)(?:(?:زنان|زن)\s*(?:و|،|,|\/|-)?\s*(?:مردان|مرد)|(?:مردان|مرد)\s*(?:و|،|,|\/|-)?\s*(?:زنان|زن))(?=\s|$)/g;
+function stripBoth(t){ return (' ' + t + ' ').replace(BOTH_RE, ' ').replace(/\s+/g,' ').trim(); }
+function findUni(t){
+  const re = /(دانشگاه|موسسه|مؤسسه|آموزشکده|پردیس|مرکز|دانشکده)/g;
+  let m;
+  while((m = re.exec(t))){
+    const rest = t.slice(m.index + m[0].length);
+    if(/^[\s\u200c]*(ها|های)(?![\u0600-\u06FF])/.test(rest)) continue;
+    const prev = t.slice(0, m.index).trim().split(/\s+/).pop();
+    if(['به','از','در','برای','با','و'].includes(prev)) continue;
+    return m.index;
+  }
+  return -1;
+}
+const DORM_RE = /(فاقد|دارای|بدون|با)[\s\u200c]*خوابگاه/;
+const TYPE1 = new RegExp(TYPE_RE.source), ADM1 = new RegExp(ADM_RE.source);
+function formatDesc(cells, ctx){
+  cells = cells.filter(c => !/^[\d\s\-–.,،\/]+$/.test(toEn(c)));
+  const isType = c => !c.replace(TYPE_RE,' ').replace(ADM_RE,' ').replace(/[\s\-–]/g,'');
+  let city = '', uni = '';
+  const k = cells.findIndex(c => CITY_SET.has(cityKey(c)));
+  if(k >= 0){ city = cells[k]; cells = cells.filter((_,i) => i !== k); }
+  const u = cells.findIndex(c => UNI_START.test(c) && !isType(c));
+  if(u >= 0){ uni = cells[u]; cells = cells.filter((_,i) => i !== u); }
+  if(!city && uni){
+    for(let i = cells.length - 1; i >= 1; i--){
+      const c = cells[i];
+      if(c.split(' ').length <= 3 && !/\d/.test(c) && !TYPE1.test(c) && !ADM1.test(c)){
+        city = c; cells = cells.filter((_,j) => j !== i); break;
+      }
+    }
+  }
+  let adm = '';
+  const types = [];
+  let text = (' ' + cells.join(' ') + ' ')
+    .replace(ADM_RE, (m, w) => { if(!adm) adm = (w === 'بدون' ? 'بدون آزمون' : 'با آزمون'); return ' '; })
+    .replace(TYPE_RE, m => { const t = m.replace(/\u200c/g,' ').replace(/\s+/g,' ').trim(); if(!types.includes(t)) types.push(t); return ' '; })
+    .replace(/\s+/g,' ').replace(/^[\s\-–]+|[\s\-–]+$/g,'').trim();
+  text = stripBoth(text);
+  let field = text;
+  if(!uni){
+    const m = findUni(text);
+    if(m > 0){ field = text.slice(0,m).trim().replace(/[\-–]+$/,'').trim(); uni = text.slice(m).trim(); }
+    else if(m === 0){ uni = text; field = ''; }
+  }
+  if(!uni && ctx && ctx.uni){ uni = ctx.uni; if(!city) city = ctx.city; }
+  if(!city){
+    const pad = ' ' + cityKey(uni) + ' ';
+    let best = '', bestIdx = -1;
+    for(const c of CITIES_SORTED){
+      const idx = pad.lastIndexOf(' ' + c + ' ');
+      if(idx > bestIdx){ bestIdx = idx; best = c; }
+    }
+    city = best;
+  }
+  if(!city && uni) city = 'شهر نامشخص';
+  const extras = [];
+  let dorm = '';
+  field = ' ' + field + ' ';
+  field = field.replace(DORM_RE, (m, w) => { dorm = w + ' خوابگاه'; return ' '; });
+  field = field.replace(/\s+/g,' ').trim();
+  const vi = field.search(/(^|\s)(ویژه|ممنوعیت)(\s|$)/);
+  if(vi > 0){ extras.push(field.slice(vi).trim()); field = field.slice(0, vi).trim(); }
+  const place = (city && uni) ? city + ' - ' + uni : (uni || city || 'شهر و دانشگاه نامشخص');
+  return [field, place, adm, types.join('، ')].concat(extras, dorm ? [dorm] : []).filter(Boolean).join(' | ');
+}
+
+function lineToEntry(text, re, ctx, extra){
+  let cells = text.split('‖').map(c => cleanFa(c)).filter(Boolean);
+  if(!cells.length) return null;
+  let code = '';
+  const ci = cells.findIndex(c => re.test(toEn(c)));
+  if(ci >= 0){
+    code = toEn(cells[ci]); cells.splice(ci,1);
+  } else {
+    for(let k = 0; k < cells.length && !code; k++){
+      const toks = cells[k].split(' ');
+      const t = toks.findIndex(x => re.test(toEn(x)));
+      if(t >= 0){ code = toEn(toks[t]); toks.splice(t,1); cells[k] = toks.join(' '); }
+    }
+  }
+  if(!code) return null;
+  cells = cells.filter(Boolean);
+  if(extra && extra.length){
+    extra.forEach(x => { cells = cells.concat(x.split('‖').map(c => cleanFa(c)).filter(Boolean)); });
+  }
+  const raw = stripBoth(cells.join(' ').trim());
+  if(raw.replace(/[\d\s\-–.,،]/g,'').length < 4) return null;
+  const rawLine = [text].concat(extra || []).map(t => t.split('‖').map(c => cleanFa(c)).filter(Boolean).join('  ‖  ')).join('\n+ ');
+  return {code, desc: $('fmt').checked ? formatDesc(cells, ctx) : raw,
+          raw: rawLine + (ctx && ctx.uni ? '\n[عنوان بخش: ' + (ctx.city ? ctx.city + ' - ' : '') + ctx.uni + ']' : '')};
+}
+function updateCtx(text, ctx){
+  let cells = text.split('‖').map(c => cleanFa(c)).filter(Boolean);
+  cells = cells.filter(c => !/^[\d\s\-–.,،\/]+$/.test(toEn(c)));
+  const ui = cells.findIndex(c => UNI_START.test(c));
+  if(ui < 0 || cells.join(' ').length > 120) return;
+  let uni = cells[ui], city = '';
+  const ck = cells.findIndex((c,i) => i !== ui && CITY_SET.has(cityKey(c)));
+  if(ck >= 0) city = cells[ck];
+  const m = uni.match(/^(.*?)\s*(?:[\-–]|\()\s*([^\-–()]+?)\s*\)?$/);
+  if(m && CITY_SET.has(cityKey(m[2]))){ uni = m[1].trim(); city = city || m[2].trim(); }
+  if(!city){
+    const pad = ' ' + cityKey(uni) + ' ';
+    let best = '', bi = -1;
+    for(const c of CITIES_SORTED){ const i = pad.lastIndexOf(' ' + c + ' '); if(i > bi){ bi = i; best = c; } }
+    city = best;
+  }
+  ctx.uni = uni; ctx.city = city;
+}
+async function scanPdf(file, re){
+  if(!window.pdfjsLib) throw new Error('کتابخانه‌ی خواندن PDF بارگذاری نشده است. اتصال اینترنت را بررسی کنید.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+  const lines = [];
+  let chars = 0;
+  for(let p = 1; p <= pdf.numPages; p++){
+    $('scanStatus').textContent = 'در حال خواندن صفحه ' + toFa(p) + ' از ' + toFa(pdf.numPages) + '…';
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    const items = tc.items.filter(i => i.str && i.str.trim()).map(i => ({s:i.str, x:i.transform[4], y:i.transform[5]}));
+    chars += items.length;
+    const rows = [];
+    items.sort((a,b) => b.y - a.y);
+    for(const it of items){
+      const last = rows[rows.length-1];
+      const r = (last && Math.abs(last.y - it.y) <= 3) ? last : rows.find(r => Math.abs(r.y - it.y) <= 3);
+      if(r) r.items.push(it); else rows.push({y:it.y, items:[it]});
+    }
+    for(const r of rows){
+      r.items.sort((a,b) => b.x - a.x);
+      lines.push({t: r.items.map(i => fixItem(i.s)).join(' ‖ '), p, y: r.y});
+    }
+    await new Promise(r => setTimeout(r, 0));
+  }
+  if(chars === 0) throw new Error('این PDF متن ندارد و احتمالاً فقط عکس است. نسخه‌ی متنی دفترچه را از سایت سازمان سنجش دانلود کنید.');
+  return lines;
+}
+async function scanText(file){
+  return (await file.text()).split(/\r?\n/).map((l,i) => ({t: l.replace(/[\t;,]+/g,' ‖ '), p:0, y:-i*10}));
+}
+async function doScan(){
+  const f = $('file').files[0];
+  if(!f){ toast('ابتدا فایل دفترچه را انتخاب کنید'); return; }
+  const re = digitRange();
+  $('scanBtn').disabled = true;
+  try{
+    const lines = /\.pdf$/i.test(f.name) ? await scanPdf(f, re) : await scanText(f);
+    lastLines = lines.map(l => cleanFa(l.t.replace(/‖/g,'  ‖  ')));
+    const isCode = lines.map(l => lineToEntry(l.t, re, null) !== null);
+    const pageCodes = new Map();
+    let prevCode = null; const gaps = [];
+    lines.forEach((l,i) => {
+      if(!isCode[i]) return;
+      if(!pageCodes.has(l.p)) pageCodes.set(l.p, []);
+      pageCodes.get(l.p).push(i);
+      if(prevCode && prevCode.p === l.p) gaps.push(Math.abs(prevCode.y - l.y));
+      prevCode = l;
+    });
+    gaps.sort((x,y) => x - y);
+    const G = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 0;
+    const extra = new Map();
+    const heading = new Set();
+    lines.forEach((l,i) => {
+      if(isCode[i]) return;
+      let best = -1, bd = Infinity;
+      for(const j of (pageCodes.get(l.p) || [])){
+        const d = Math.abs(lines[j].y - l.y);
+        if(d < bd){ bd = d; best = j; }
+      }
+      if(best >= 0 && G > 0 && bd <= 0.5 * G){
+        if(!extra.has(best)) extra.set(best, []);
+        extra.get(best).push(l.t);
+      } else heading.add(i);
+    });
+    const seen = new Set(), out = [];
+    const ctx = {uni:'', city:''};
+    lines.forEach((l,i) => {
+      if(isCode[i]){
+        const e = lineToEntry(l.t, re, ctx, extra.get(i));
+        if(e && !seen.has(e.code)){ seen.add(e.code); out.push(e); }
+      } else if(heading.has(i)) updateCtx(l.t, ctx);
+    });
+    if(!out.length){
+      $('scanStatus').textContent = 'هیچ رشته‌ای پیدا نشد. تعداد ارقام کد را تغییر دهید یا گزینه‌ی برعکس را امتحان کنید.';
+      $('sample').textContent = lastLines.slice(0,3).join('\n');
+      return;
+    }
+    setCatalog(out);
+    const ok = saveCatalog();
+    slots.forEach(s => { if(s.auto && byCode.has(s.code)) s.desc = byCode.get(s.code).desc; });
+    saveDraft(); render();
+    exclusions = extractExclusions(); saveExc(); renderExc(); applyFlags();
+    const noCity = out.filter(e => e.desc.includes('نامشخص')).length;
+    $('sample').textContent = 'نمونه:\n' + out.slice(0,3).map(e => e.code + '  ' + e.desc).join('\n') +
+      (noCity ? '\n\nشهر ' + toFa(noCity) + ' رشته پیدا نشد. با «بررسی یک کد» یکی از آن‌ها را ببینید.' : '');
+    if(!ok) toast('حجم داده زیاد است؛ بعد از بستن صفحه باید دوباره اسکن کنید');
+    else toast(toFa(out.length) + ' رشته‌محل خوانده شد');
+  }catch(err){
+    $('scanStatus').textContent = 'خطا: ' + err.message;
+  }finally{
+    $('scanBtn').disabled = false;
+  }
+}
+
+/* ---------- search ---------- */
+function runSearch(){
+  const q = searchKey($('q').value);
+  const box = $('results');
+  if(!q || !catalog.length){
+    box.hidden = true; box.innerHTML = '';
+    $('qStatus').textContent = catalog.length ? '' : 'برای جستجو ابتدا دفترچه را اسکن کنید، یا کد را مستقیم در پیش‌نویس بنویسید.';
+    return;
+  }
+  const terms = q.split(' ');
+  const used = new Set(slots.map(s => s.code).filter(Boolean));
+  const hits = [];
+  for(const r of catalog){
+    const k = r.code + ' ' + searchKey(r.desc);
+    if(terms.every(t => k.includes(t))){ hits.push(r); if(hits.length >= 60) break; }
+  }
+  box.hidden = false; box.innerHTML = '';
+  hits.forEach(r => {
+    const d = document.createElement('div');
+    d.className = 'res' + (used.has(r.code) ? ' used' : '');
+    const c = document.createElement('span'); c.className = 'c'; c.textContent = toFa(r.code);
+    const t = document.createElement('span'); t.className = 'd'; t.textContent = r.desc;
+    const b = document.createElement('button');
+    b.textContent = used.has(r.code) ? 'افزوده شد' : 'افزودن';
+    b.disabled = used.has(r.code);
+    b.addEventListener('click', () => addEntry(r));
+    d.append(c, t, b); box.appendChild(d);
+  });
+  $('qStatus').textContent = hits.length ? (hits.length >= 60 ? 'نمایش ۶۰ نتیجه‌ی اول؛ جستجو را دقیق‌تر کنید.' : toFa(hits.length) + ' نتیجه') : 'نتیجه‌ای پیدا نشد.';
+}
+function addEntry(r){
+  const i = slots.findIndex(s => !s.code && !s.desc);
+  if(i < 0){ toast('هر ۱۵۰ ردیف پر است'); return; }
+  slots[i] = {code:r.code, desc:r.desc, auto:true};
+  saveDraft(); render(); runSearch();
+  const row = $('list').children[i];
+  if(row) row.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+
+/* ---------- list rendering ---------- */
+const list = $('list');
+function render(){
+  list.innerHTML = '';
+  slots.forEach((s,i) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.dataset.i = i;
+    row.innerHTML =
+      '<span><input type="checkbox" class="selbox" aria-label="انتخاب ردیف"></span>' +
+      '<span class="handle" title="بکشید و جابه‌جا کنید">⠿</span>' +
+      '<span class="num"></span>' +
+      '<input type="text" class="code" inputmode="numeric" maxlength="8" aria-label="کد رشته‌محل">' +
+      '<div class="desc" aria-label="عنوان رشته"></div>' +
+      '<span class="warn" aria-label="غیرمجاز">!</span>' +
+      '<span class="acts">' +
+        '<button data-act="up" title="بالا" aria-label="انتقال به بالا">▲</button>' +
+        '<button data-act="down" title="پایین" aria-label="انتقال به پایین">▼</button>' +
+        '<button data-act="del" class="del" title="حذف ردیف" aria-label="حذف ردیف">✕</button>' +
+      '</span>';
+    row.querySelector('.num').textContent = toFa(i+1);
+    row.querySelector('.code').value = s.code;
+    row.querySelector('.desc').textContent = s.desc;
+    const on = sel.has(s);
+    row.querySelector('.selbox').checked = on;
+    row.classList.toggle('sel', on);
+    list.appendChild(row);
+  });
+  markDups();
+  applyFlags();
+  updateDraftStatus();
+  updateSel();
+}
+function markDups(){
+  const cnt = new Map();
+  slots.forEach(s => { if(s.code) cnt.set(s.code, (cnt.get(s.code)||0)+1); });
+  [...list.children].forEach((row,i) => row.classList.toggle('dup', !!slots[i].code && cnt.get(slots[i].code) > 1));
+}
+function updateDraftStatus(){
+  const filled = slots.filter(s => s.code || s.desc).length;
+  const dups = new Set(slots.filter(s=>s.code).map(s=>s.code)).size !== slots.filter(s=>s.code).length;
+  $('draftStatus').innerHTML = 'ردیف‌های پر: <b>' + toFa(filled) + '</b> از ' + toFa(N) +
+    (dups ? ' — <span style="color:var(--warn)">کد تکراری (با رنگ قرمز) دارید</span>' : '');
+}
+function move(i, j){
+  if(j < 0 || j >= N || i === j) return;
+  const [x] = slots.splice(i,1);
+  slots.splice(j,0,x);
+  saveDraft(); render(); runSearch();
+}
+/* ---------- multi-select ---------- */
+function commit(){ saveDraft(); render(); runSearch(); }
+function updateSel(){
+  for(const o of [...sel]) if(!slots.includes(o)) sel.delete(o);
+  const n = sel.size;
+  $('selbar').hidden = n === 0;
+  $('selCnt').textContent = toFa(n) + ' ردیف انتخاب شده';
+  const filled = slots.filter(x => x.code || x.desc);
+  const all = $('selAll');
+  const k = filled.filter(x => sel.has(x)).length;
+  all.checked = filled.length > 0 && k === filled.length;
+  all.indeterminate = k > 0 && k < filled.length;
+}
+function refreshSel(){
+  [...list.children].forEach((row,i) => {
+    const on = sel.has(slots[i]);
+    row.classList.toggle('sel', on);
+    row.querySelector('.selbox').checked = on;
+  });
+  updateSel();
+}
+function placeBlock(at){
+  const block = slots.filter(x => sel.has(x));
+  const rest = slots.filter(x => !sel.has(x));
+  at = Math.max(0, Math.min(rest.length, at));
+  rest.splice(at, 0, ...block);
+  slots = rest; commit();
+}
+function moveSel(dir){
+  const a = slots.slice();
+  if(dir < 0){ for(let i = 1; i < N; i++) if(sel.has(a[i]) && !sel.has(a[i-1])){ const t = a[i-1]; a[i-1] = a[i]; a[i] = t; } }
+  else { for(let i = N - 2; i >= 0; i--) if(sel.has(a[i]) && !sel.has(a[i+1])){ const t = a[i+1]; a[i+1] = a[i]; a[i] = t; } }
+  slots = a; commit();
+}
+function dropBlock(to, down){
+  const target = slots[to];
+  if(sel.has(target)) return;
+  const rest = slots.filter(x => !sel.has(x));
+  placeBlock(rest.indexOf(target) + (down ? 1 : 0));
+}
+function selAction(a){
+  if(!sel.size) return;
+  if(a === 'up') moveSel(-1);
+  else if(a === 'down') moveSel(1);
+  else if(a === 'top') placeBlock(0);
+  else if(a === 'endfilled'){
+    const rest = slots.filter(x => !sel.has(x));
+    let last = -1; rest.forEach((x,i) => { if(x.code || x.desc) last = i; });
+    placeBlock(last + 1);
+  }
+  else if(a === 'to'){
+    const n = parseInt(toEn($('selTo').value).replace(/\D/g,''), 10);
+    if(!n || n < 1 || n > N){ toast('شماره ردیف مقصد را (۱ تا ۱۵۰) بنویسید'); return; }
+    placeBlock(n - 1);
+  }
+  else if(a === 'gather'){
+    const first = slots.findIndex(x => sel.has(x));
+    placeBlock(first);
+  }
+  else if(a === 'del'){
+    if(!confirm(toFa(sel.size) + ' ردیف انتخاب‌شده حذف شود؟')) return;
+    slots = slots.filter(x => !sel.has(x));
+    while(slots.length < N) slots.push({code:'', desc:'', auto:false});
+    sel.clear(); commit();
+  }
+  else if(a === 'clear'){ sel.clear(); refreshSel(); }
+}
+$('selbar').addEventListener('click', e => {
+  const b = e.target.closest('button[data-sel]'); if(b) selAction(b.dataset.sel);
+});
+$('selTo').addEventListener('keydown', e => { if(e.key === 'Enter') selAction('to'); });
+$('selAll').addEventListener('change', e => {
+  slots.forEach(x => { if(x.code || x.desc){ if(e.target.checked) sel.add(x); else sel.delete(x); } });
+  refreshSel();
+});
+list.addEventListener('click', e => {
+  const c = e.target.closest('input.selbox'); if(!c) return;
+  const i = +c.closest('.row').dataset.i;
+  if(e.shiftKey && lastSel !== null){
+    const a = Math.min(lastSel, i), b = Math.max(lastSel, i);
+    for(let k = a; k <= b; k++) sel.add(slots[k]);
+  } else if(c.checked) sel.add(slots[i]);
+  else sel.delete(slots[i]);
+  lastSel = i; refreshSel();
+});
+
+function remove(i){
+  slots.splice(i,1);
+  slots.push({code:'', desc:'', auto:false});
+  saveDraft(); render(); runSearch();
+}
+
+list.addEventListener('click', e => {
+  const b = e.target.closest('button[data-act]');
+  if(!b) return;
+  const i = +b.closest('.row').dataset.i;
+  const a = b.dataset.act;
+  if(a === 'up') move(i, i-1);
+  else if(a === 'down') move(i, i+1);
+  else if(a === 'del') remove(i);
+});
+list.addEventListener('change', e => {
+  const row = e.target.closest('.row'); if(!row) return;
+  const i = +row.dataset.i, s = slots[i];
+  if(e.target.classList.contains('code')){
+    const c = toEn(e.target.value).replace(/\D/g,'');
+    s.code = c; e.target.value = c;
+    const hit = byCode.get(c);
+    const d = row.querySelector('.desc');
+    if(hit){ s.desc = hit.desc; s.auto = true; }
+    else {
+      s.desc = ''; s.auto = false;
+      if(c && catalog.length) toast('این کد در دفترچه‌ی اسکن‌شده پیدا نشد');
+      else if(c) toast('برای نمایش عنوان، ابتدا دفترچه را اسکن کنید');
+    }
+    d.textContent = s.desc;
+  }
+  markDups(); applyFlags(); saveDraft(); runSearch();
+});
+list.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.target.tagName === 'INPUT'){
+    const inputs = [...list.querySelectorAll('input[type=text]')];
+    const k = inputs.indexOf(e.target);
+    e.target.blur();
+    if(inputs[k+1]) inputs[k+1].focus();
+  }
+});
+
+/* drag & drop: a single row, or all selected rows together */
+let dragFrom = null, dragItems = [];
+function clearOver(){ [...list.children].forEach(r => r.classList.remove('ov-t','ov-b')); }
+function dropAfter(e, row){ const r = row.getBoundingClientRect(); return e.clientY > r.top + r.height / 2; }
+list.addEventListener('mousedown', e => {
+  const row = e.target.closest('.row'); if(!row) return;
+  if(e.target.closest('input,button,select,textarea')) return;
+  const i = +row.dataset.i;
+  if(e.target.closest('.handle') || e.target.closest('.num') || sel.has(slots[i])) row.draggable = true;
+});
+list.addEventListener('dragstart', e => {
+  const row = e.target.closest && e.target.closest('.row');
+  if(!row) return;
+  dragFrom = +row.dataset.i;
+  const s0 = slots[dragFrom];
+  dragItems = (sel.size > 1 && sel.has(s0)) ? slots.filter(x => sel.has(x)) : [s0];
+  e.dataTransfer.effectAllowed = 'move';
+  try{ e.dataTransfer.setData('text/plain', String(dragFrom)); }catch(_){}
+  if(dragItems.length > 1){
+    const g = document.createElement('div');
+    g.textContent = toFa(dragItems.length) + ' ردیف';
+    g.style.cssText = 'position:fixed;top:-200px;left:0;padding:6px 14px;background:#0f6b66;color:#fff;border-radius:8px;font:14px Tahoma,sans-serif';
+    document.body.appendChild(g);
+    try{ e.dataTransfer.setDragImage(g, 12, 12); }catch(_){}
+    setTimeout(() => g.remove(), 0);
+  }
+  setTimeout(() => { [...list.children].forEach((r,i) => { if(dragItems.includes(slots[i])) r.classList.add('dragging'); }); }, 0);
+});
+list.addEventListener('dragover', e => {
+  if(dragFrom === null) return;
+  const row = e.target.closest('.row'); if(!row) return;
+  e.preventDefault();
+  try{ e.dataTransfer.dropEffect = 'move'; }catch(_){}
+  clearOver();
+  row.classList.add(dropAfter(e, row) ? 'ov-b' : 'ov-t');
+});
+list.addEventListener('drop', e => {
+  if(dragFrom === null) return;
+  const row = e.target.closest('.row'); if(!row) return;
+  e.preventDefault();
+  const target = slots[+row.dataset.i];
+  const after = dropAfter(e, row);
+  const items = dragItems;
+  dragFrom = null; dragItems = []; clearOver();
+  if(items.includes(target)){ refreshDrag(); return; }
+  const rest = slots.filter(x => !items.includes(x));
+  rest.splice(rest.indexOf(target) + (after ? 1 : 0), 0, ...items);
+  slots = rest; commit();
+});
+function refreshDrag(){ [...list.children].forEach(r => { r.classList.remove('dragging'); r.draggable = false; }); }
+list.addEventListener('dragend', () => { dragFrom = null; dragItems = []; clearOver(); refreshDrag(); });
+
+/* ---------- print / PDF ---------- */
+function buildPrint(){
+  const area = $('printArea');
+  area.innerHTML = '';
+  const el = (tag, cls, txt) => { const x = document.createElement(tag); if(cls) x.className = cls; if(txt !== undefined) x.textContent = txt; return x; };
+  const owner = $('owner').value.trim();
+  let date = '';
+  try{ date = new Date().toLocaleDateString('fa-IR-u-ca-persian'); }catch(e){}
+  const rows = slots.map((s,i) => ({s,i})).filter(x => x.s.code || x.s.desc);
+  const ym = yellowMap();
+
+  const head = el('div','phead');
+  head.appendChild(el('div','pt','پیش‌نویس انتخاب رشته کنکور'));
+  const pm = el('div','pm');
+  [owner, date, toFa(rows.length) + ' رشته'].filter(Boolean).forEach(t => pm.appendChild(el('span','',t)));
+  head.appendChild(pm);
+
+  const tb = el('table');
+  const cg = document.createElement('colgroup');
+  [6,10,84].forEach(w => { const c = document.createElement('col'); c.style.width = w + '%'; cg.appendChild(c); });
+  tb.appendChild(cg);
+  const tr0 = el('tr');
+  [['n','ردیف'],['c','کد'],['f','عنوان رشته و دانشگاه']].forEach(([c,t]) => tr0.appendChild(el('th',c,t)));
+  const th = el('thead'); th.appendChild(tr0); tb.appendChild(th);
+
+  const body = el('tbody');
+  let flagged = false, flagY = false;
+  rows.forEach(({s,i}) => {
+    const red = !!evalRow(s), yel = !!ym[i];
+    const tr = el('tr', red ? 'r' : (yel ? 'y' : ''));
+    tr.appendChild(el('td','n',toFa(i+1)));
+    tr.appendChild(el('td','c',s.code ? toFa(s.code) : ''));
+    const f = el('td','f', s.desc || '');
+    if(red){ f.appendChild(el('span','pmark','!')); flagged = true; }
+    if(yel){ f.appendChild(el('span','pmark y','!')); flagY = true; }
+    tr.appendChild(f);
+    body.appendChild(tr);
+  });
+  tb.appendChild(body);
+
+  area.append(head, tb);
+  const lgt = [];
+  if(flagged) lgt.push('علامت قرمز: با توجه به کارنامه مجاز به انتخاب این رشته نیستید.');
+  if(flagY) lgt.push('علامت زرد: با توجه به شرایط محرومیت دفترچه، این رشته یا باعث محرومیت از رشته‌های دیگر می‌شود یا پس از انتخاب قبلی مجاز نیست.');
+  if(lgt.length) area.appendChild(el('div','legend',lgt.join('  —  ')));
+}
+let themeBeforePrint = null;
+window.addEventListener('beforeprint', () => {
+  buildPrint();
+  const r = document.documentElement;
+  if(themeBeforePrint === null){ themeBeforePrint = r.dataset.theme || 'light'; r.dataset.theme = 'light'; }
+});
+window.addEventListener('afterprint', () => {
+  if(themeBeforePrint !== null){ document.documentElement.dataset.theme = themeBeforePrint; themeBeforePrint = null; }
+});
+$('printBtn').addEventListener('click', () => {
+  if(!slots.some(s => s.code || s.desc)){ toast('پیش‌نویس خالی است'); return; }
+  buildPrint();
+  const t0 = document.title, ow = $('owner').value.trim();
+  document.title = 'پیش‌نویس انتخاب رشته' + (ow ? ' - ' + ow : '');
+  window.addEventListener('afterprint', () => { document.title = t0; }, {once:true});
+  window.print();
+});
+
+/* ---------- backup ---------- */
+$('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({owner:$('owner').value, slots}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'entekhab-reshte-backup.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$('importBtn').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    const arr = Array.isArray(d) ? d : d.slots;
+    if(!Array.isArray(arr)) throw 0;
+    slots = Array.from({length:N}, (_,i) => ({code:(arr[i]&&arr[i].code)||'', desc:(arr[i]&&arr[i].desc)||'', auto:!!(arr[i]&&arr[i].auto)}));
+    if(d.owner) $('owner').value = d.owner;
+    saveDraft(); render(); runSearch(); toast('پشتیبان بازیابی شد');
+  }catch(_){ toast('فایل پشتیبان معتبر نیست'); }
+  e.target.value = '';
+});
+$('clearBtn').addEventListener('click', () => {
+  if(!slots.some(s => s.code || s.desc)) return;
+  if(confirm('همه‌ی ۱۵۰ ردیف پاک شود؟')){
+    slots = Array.from({length:N}, () => ({code:'', desc:'', auto:false}));
+    saveDraft(); render(); runSearch();
+  }
+});
+
+$('scanBtn').addEventListener('click', doScan);
+window.addEventListener('scroll', () => $('toTop').classList.toggle('on', window.scrollY > 500), {passive:true});
+$('toTop').addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+function contextFor(c){
+  if(!c || !lastLines.length) return '';
+  const i = lastLines.findIndex(l => toEn(l).split(/\s+/).includes(c));
+  if(i < 0) return '';
+  return lastLines.slice(Math.max(0,i-4), i+5).map((l,k) => (Math.max(0,i-4)+k === i ? '>> ' : '   ') + l).join('\n');
+}
+$('chkBtn').addEventListener('click', () => {
+  const c = toEn($('chk').value).replace(/\D/g,'');
+  const r = byCode.get(c);
+  if(!c){ $('chkOut').textContent = ''; return; }
+  $('chkOut').textContent = (!r ? 'این کد در نتیجه‌ی اسکن نیست.' :
+    'سطر خام:\n' + (r.raw || '(برای دیدن سطر خام فایل را دوباره اسکن کنید)') + '\n\nنتیجه:\n' + r.desc) +
+    (contextFor(c) ? '\n\nسطرهای اطراف در PDF:\n' + contextFor(c) : '');
+});
+$('q').addEventListener('input', runSearch);
+$('owner').addEventListener('input', () => { try{ localStorage.setItem(K_OWNER, $('owner').value); }catch(e){} });
+
+
+/* ---------- karname & permissions ---------- */
+const K_KAR = 'entekhab_karname_v2';
+const CATS = [
+  {id:'A', label:'روزانه / نوبت دوم', short:'روزانه / نوبت دوم'},
+  {id:'B', label:'مجازی، پردیس خودگردان، شهریه‌پرداز (و دانشگاه آزاد ۴ رشته دکتری)', short:'مجازی / پردیس / شهریه‌پرداز'},
+  {id:'C', label:'پیام نور و غیرانتفاعی', short:'پیام نور / غیرانتفاعی'},
+  {id:'D', label:'دانشگاه آزاد اسلامی (بجز ۴ رشته)', short:'دانشگاه آزاد'},
+  {id:'E', label:'رشته‌محل‌های مخصوص بهیاری', short:'ویژه بهیاران'}
+];
+const GROUPS = [
+  {id:'exam', label:'رشته‌های با آزمون (آزمون و سابقه تحصیلی)', cats:['A','B','C','D','E'], name:'با آزمون'},
+  {id:'noexam', label:'رشته‌های بدون آزمون (فقط سابقه تحصیلی)', cats:['A','B','C','D'], name:'بدون آزمون'}
+];
+const CAT_RE = {
+  A: /روزانه|شبانه|نوبت[\s\u200c]*دوم/,
+  B: /مجازی|پردیس[\s\u200c]*خودگردان|شهریه[\s\u200c]*پرداز/,
+  C: /پیام[\s\u200c]*نور|غیر[\s\u200c]*انتفاعی/,
+  E: /بهیار/
+};
+const AZAD_RE = /آزاد[\s\u200c]*اسلامی/;
+const DOC_RE = /^(پزشکی|دندانپزشکی|داروسازی|دامپزشکی)(\s|$)/;
+let perm = {exam:{}, noexam:{}};
+let gender = '';
+let useKar = true;
+
+function saveKar(){ try{ localStorage.setItem(K_KAR, JSON.stringify({perm, gender, useKar})); }catch(e){} }
+function loadKar(){
+  try{
+    const d = JSON.parse(localStorage.getItem(K_KAR) || 'null');
+    if(d){ perm = {exam: (d.perm && d.perm.exam) || {}, noexam: (d.perm && d.perm.noexam) || {}}; gender = d.gender || ''; useKar = d.useKar !== false; }
+  }catch(e){}
+  $('gender').value = gender;
+  $('useKar').checked = useKar;
+  $('karWrap').classList.toggle('off', !useKar);
+}
+function buildPerm(){
+  const box = $('perm'); box.innerHTML = '';
+  GROUPS.forEach(g => {
+    const wrap = document.createElement('div'); wrap.className = 'permgroup';
+    const h = document.createElement('h3'); h.textContent = g.label;
+    const grid = document.createElement('div'); grid.className = 'permgrid'; grid.style.marginTop = '4px';
+    g.cats.forEach(cid => {
+      const cat = CATS.find(c => c.id === cid);
+      const lb = document.createElement('label');
+      const t = document.createElement('span'); t.textContent = cat.label; t.style.fontSize = '13px';
+      const sel = document.createElement('select');
+      sel.innerHTML = '<option value="ok">مجاز</option><option value="no">غیرمجاز</option>';
+      sel.value = perm[g.id][cid] === 'no' ? 'no' : 'ok';
+      lb.classList.toggle('no', sel.value === 'no');
+      sel.addEventListener('change', () => {
+        perm[g.id][cid] = sel.value; lb.classList.toggle('no', sel.value === 'no');
+        saveKar(); applyFlags();
+      });
+      lb.append(t, sel); grid.appendChild(lb);
+    });
+    wrap.append(h, grid); box.appendChild(wrap);
+  });
+}
+function rowInfo(d){
+  const parts = d.split('|').map(x => x.trim());
+  const first = parts[0];
+  let adm = '';
+  if(/(^|[\s|])بدون[\s\u200c]*آزمون/.test(d)) adm = 'noexam';
+  else if(/(^|[\s|])با[\s\u200c]*آزمون/.test(d)) adm = 'exam';
+  const cats = new Set();
+  ['A','B','C','E'].forEach(k => { if(CAT_RE[k].test(d)) cats.add(k); });
+  if(AZAD_RE.test(d)) cats.add(DOC_RE.test(first) ? 'B' : 'D');
+  const uniKnown = parts.length >= 2 && UNI_ANY.test(parts[1]) && !/نامشخص/.test(parts[1]);
+  if(uniKnown && !['A','B','C','D'].some(k => cats.has(k))) cats.add('A');
+  return {adm, cats};
+}
+function evalRow(s){
+  if(!useKar) return '';
+  const d = cleanFa(s.desc || '');
+  if(!d) return '';
+  const reasons = [];
+  const {adm, cats} = rowInfo(d);
+  cats.forEach(c => {
+    const denied = adm ? perm[adm][c] === 'no' : GROUPS.every(g => !g.cats.includes(c) || perm[g.id][c] === 'no');
+    if(denied) reasons.push((adm ? GROUPS.find(g => g.id === adm).name + ': ' : '') + CATS.find(x => x.id === c).short);
+  });
+  if(gender){
+    const first = d.split('|')[0];
+    const opp = gender === 'زن' ? /(^|\s)(مرد|مردان)(\s|$)/ : /(^|\s)(زن|زنان)(\s|$)/;
+    if(opp.test(first)) reasons.push(gender === 'زن' ? 'ویژه آقایان' : 'ویژه خانم‌ها');
+  }
+  return reasons.join('، ');
+}
+function applyFlags(){
+  const ym = yellowMap();
+  [...list.children].forEach((row,i) => {
+    const r = evalRow(slots[i]);
+    const y = ym[i] || '';
+    const w = row.querySelector('.warn');
+    w.classList.toggle('on', !!(r || y));
+    w.classList.toggle('yel', !r && !!y);
+    const tips = [];
+    if(r) tips.push('با توجه به کارنامه مجاز به انتخاب نیستید (' + r + ')');
+    if(y) tips.push('محرومیت دفترچه — ' + y);
+    w.dataset.tip = tips.join(' | ');
+    if(r || y) w.setAttribute('tabindex','0'); else w.removeAttribute('tabindex');
+    row.classList.toggle('bad', !!r);
+    row.classList.toggle('yel', !!y);
+  });
+}
+
+/* ---------- exclusion conditions (شرایط محرومیت) ---------- */
+function saveExc(){ try{ localStorage.setItem(K_EXC, JSON.stringify(exclusions)); }catch(e){} }
+function expandCodes(t){
+  const e = toEn(t), out = new Set(), used = [];
+  e.replace(/(\d{4,7})\s*(?:تا|الی|لغایت|-|–)\s*(\d{4,7})/g, (m, a, b, off) => {
+    const lo = +a, hi = +b;
+    if(lo <= hi && hi - lo < 5000) for(const r of catalog){ const v = +r.code; if(v >= lo && v <= hi) out.add(r.code); }
+    used.push([off, off + m.length]); return m;
+  });
+  e.replace(/\d{4,7}/g, (m, off) => {
+    if(used.some(u => off >= u[0] && off < u[1])) return m;
+    if(byCode.has(m)) out.add(m);
+    return m;
+  });
+  return out;
+}
+function parseRule(text){
+  const t = cleanFa(text);
+  const effRe = /محروم|ممنوع|مجاز[\s‌]*نیست|مجاز[\s‌]*نمی|نمی[\s‌]*(?:توان|تواند|توانند)|حق[\s‌]*انتخاب[\s‌]*ندارد/;
+  const e = t.search(effRe);
+  if(e < 0) return null;
+  let trig, block, order = 'any';
+  const mo = t.match(/(?:پس|بعد)[\s‌]*از/);
+  if(mo){
+    order = 'after';
+    const tail = t.slice(mo.index + mo[0].length);
+    if(e > mo.index){
+      const cut = tail.search(/[،,؛;:]/);
+      if(cut < 0) return null;
+      trig = expandCodes(tail.slice(0, cut)); block = expandCodes(tail.slice(cut));
+    } else {
+      block = expandCodes(t.slice(0, mo.index)); trig = expandCodes(tail);
+    }
+  } else {
+    const head = t.slice(0, e);
+    const re2 = /(?:از|در|برای)[\s‌]*انتخاب/g;
+    let q = -1, m;
+    while((m = re2.exec(head))) q = m.index;
+    if(q < 0) return null;
+    trig = expandCodes(head.slice(0, q));
+    block = expandCodes(head.slice(q));
+    if(!block.size) block = expandCodes(t.slice(e));
+  }
+  block = new Set([...block].filter(c => !trig.has(c)));
+  if(!trig.size || !block.size) return null;
+  return {trig:[...trig].slice(0, 2000), block:[...block].slice(0, 2000), order};
+}
+function extractExclusions(){
+  const flat = lastLines.map(l => l.replace(/\s*‖\s*/g,' ').replace(/\s+/g,' ').trim());
+  const out = [], seen = new Set();
+  let i = 0;
+  while(i < flat.length && out.length < 40){
+    const l = flat[i];
+    if(!/محروم/.test(l) || /\.{4,}|…/.test(l) || /^\d{4,7}(\s|$)/.test(toEn(l))){ i++; continue; }
+    let st = i;
+    const startsItem = /^[\d]+\s*[-.)–]/.test(toEn(l));
+    while(!startsItem && st > 0 && i - st < 2 && !/[.؟:]$/.test(flat[st-1]) && !/\.{4,}|…/.test(flat[st-1]) && !/^\d{4,7}(\s|$)/.test(toEn(flat[st-1]))) st--;
+    let en = i;
+    while(en < flat.length - 1 && en - i < 3 && !/[.؟]$/.test(flat[en])) en++;
+    const text = flat.slice(st, en + 1).join(' ').replace(/\s+/g,' ').trim().slice(0, 500);
+    const key = text.replace(/[\s\d]/g,'');
+    if(text.length >= 20 && !seen.has(key)){
+      seen.add(key);
+      const r = parseRule(text);
+      out.push({text, trig: r ? r.trig : [], block: r ? r.block : [], order: r ? r.order : 'any', on: !!r});
+    }
+    i = en + 1;
+  }
+  return out;
+}
+function yellowMap(){
+  const res = Array.from({length:N}, () => []);
+  exclusions.forEach((x, k) => {
+    if(!x.on || !x.trig || !x.trig.length || !x.block || !x.block.length) return;
+    const T = new Set(x.trig), B = new Set(x.block);
+    const first = slots.findIndex(s => s.code && T.has(s.code));
+    if(first < 0) return;
+    const hit = [];
+    for(let j = (x.order === 'after' ? first + 1 : 0); j < N; j++){
+      const c = slots[j].code;
+      if(c && B.has(c) && j !== first){
+        hit.push(j);
+        res[j].push('شرط ' + toFa(k + 1) + ': ' + (x.order === 'after' ? 'پس از' : 'با') + ' انتخاب کد ' + toFa(slots[first].code) + ' (ردیف ' + toFa(first + 1) + ') انتخاب این رشته مجاز نیست');
+      }
+    }
+    if(hit.length){
+      const trigRows = x.order === 'after' ? [first] : slots.map((s, i) => (s.code && T.has(s.code)) ? i : -1).filter(i => i >= 0);
+      const lst = hit.slice(0, 8).map(j => toFa(j + 1)).join('، ') + (hit.length > 8 ? ' و ' + toFa(hit.length - 8) + ' ردیف دیگر' : '');
+      trigRows.forEach(i => res[i].push('شرط ' + toFa(k + 1) + ': انتخاب این رشته باعث محرومیت از انتخاب ردیف‌های ' + lst + ' می‌شود'));
+    }
+  });
+  return res.map(a => a.join(' | '));
+}
+function fmtCodes(a){ return a.slice(0, 5).map(toFa).join('، ') + (a.length > 5 ? ' و ' + toFa(a.length - 5) + ' کد دیگر' : ''); }
+function renderExc(){
+  const box = $('excl');
+  box.innerHTML = '';
+  if(!exclusions.length){ box.hidden = true; return; }
+  box.hidden = false;
+  const h = document.createElement('h3'); h.textContent = 'شرایط محرومیت دفترچه (' + toFa(exclusions.length) + ' مورد)';
+  const note = document.createElement('span'); note.className = 'meta';
+  note.textContent = 'متن زیر از دفترچه خوانده شده است. وقتی کدها قابل شناسایی باشند، ردیف‌های مشمول در پیش‌نویس زرد می‌شوند. حتماً با خود دفترچه تطبیق دهید.';
+  const ol = document.createElement('ol');
+  exclusions.forEach((x, k) => {
+    const li = document.createElement('li');
+    const p = document.createElement('div'); p.textContent = x.text; li.appendChild(p);
+    const meta = document.createElement('span'); meta.className = 'meta';
+    if(x.trig && x.trig.length && x.block && x.block.length){
+      meta.textContent = 'شناسایی‌شده: با انتخاب ' + fmtCodes(x.trig) + (x.order === 'after' ? '، رشته‌های بعد از آن' : '') + ' ← ممنوع: ' + fmtCodes(x.block);
+      li.appendChild(meta);
+      const lb = document.createElement('label');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!x.on;
+      cb.addEventListener('change', () => { x.on = cb.checked; saveExc(); applyFlags(); });
+      const t = document.createElement('span'); t.textContent = 'اعمال روی پیش‌نویس';
+      lb.append(cb, t); li.appendChild(lb);
+    } else {
+      meta.textContent = 'کدی برای بررسی خودکار شناسایی نشد؛ این مورد را خودتان با پیش‌نویس تطبیق دهید.';
+      li.appendChild(meta);
+    }
+    ol.appendChild(li);
+  });
+  box.append(h, note, ol);
+}
+
+/* --- reading the karname --- */
+function norm1(t){ return cleanFa(t).replace(/[\s\u200c]/g,''); }
+function statusOf(t){
+  const w = norm1(t);
+  if(w === 'غیرمجاز') return 'no';
+  if(w === 'مجاز') return 'ok';
+  return '';
+}
+function parseKarname(pages){
+  const out = {gender:'', exam:null, noexam:null};
+  for(const pg of pages){
+    const T = pg.tokens;
+    if(!T.length) continue;
+    if(!out.gender){
+      const ys = T.map(t => t.y), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      for(const t of T){
+        const w = norm1(t.t);
+        if((w === 'مرد' || w === 'زن') && t.y <= y0 + (y1 - y0) * 0.45){ out.gender = w; break; }
+      }
+    }
+    const cand = T.filter(t => norm1(t.t) === 'غیر' || statusOf(t.t)).sort((a,b) => a.y - b.y);
+    const rows = [];
+    for(const t of cand){
+      const r = rows[rows.length - 1];
+      if(r && Math.abs(t.y - r.y) <= pg.tol){ r.items.push(t); r.y = (r.y * (r.items.length - 1) + t.y) / r.items.length; }
+      else rows.push({y:t.y, items:[t]});
+    }
+    for(const r of rows){
+      const it = r.items.sort((a,b) => b.x - a.x);
+      const st = [];
+      for(let i = 0; i < it.length; i++){
+        if(norm1(it[i].t) === 'غیر'){
+          if(it[i+1] && statusOf(it[i+1].t) === 'ok'){ st.push('no'); i++; }
+          continue;
+        }
+        st.push(statusOf(it[i].t));
+      }
+      if(st.length === 4 && !out.noexam) out.noexam = st;
+      else if(st.length === 5 && !out.exam) out.exam = st;
+    }
+  }
+  return out;
+}
+async function pdfTokens(file){
+  if(!window.pdfjsLib) throw new Error('کتابخانه‌ی خواندن PDF بارگذاری نشده است. اتصال اینترنت را بررسی کنید.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+  const pages = [];
+  for(let p = 1; p <= Math.min(pdf.numPages, 4); p++){
+    const tc = await (await pdf.getPage(p)).getTextContent();
+    pages.push({tol:4, tokens: tc.items.filter(i => i.str && i.str.trim()).map(i => ({t:fixItem(i.str), x:i.transform[4], y:-i.transform[5]}))});
+  }
+  return pages;
+}
+function loadScript(src){
+  return new Promise((res, rej) => {
+    if(window.Tesseract) return res();
+    const sc = document.createElement('script');
+    sc.src = src; sc.onload = res;
+    sc.onerror = () => rej(new Error('بخش تشخیص متن بارگذاری نشد. اتصال اینترنت را بررسی کنید.'));
+    document.head.appendChild(sc);
+  });
+}
+async function ocrTokens(file){
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js');
+  $('kStatus').textContent = 'در حال آماده‌سازی تشخیص متن…';
+  const worker = await Tesseract.createWorker('fas', 1, {
+    logger: m => { if(m.status === 'recognizing text') $('kStatus').textContent = 'در حال تشخیص متن… ' + toFa(Math.round(m.progress * 100)) + '٪'; }
+  });
+  const pages = [], lines = [];
+  const feed = r => {
+    const words = r.data.words || (r.data.lines || []).flatMap(l => l.words || []);
+    const tokens = words.filter(w => w.text && w.text.trim() && w.bbox).map(w => ({
+      t: w.text, x: (w.bbox.x0 + w.bbox.x1) / 2, y: (w.bbox.y0 + w.bbox.y1) / 2, h: w.bbox.y1 - w.bbox.y0
+    }));
+    const hs = tokens.map(t => t.h).sort((a,b) => a - b);
+    const med = hs.length ? hs[Math.floor(hs.length / 2)] : 20;
+    pages.push({tokens, tol: Math.max(6, med * 0.6)});
+    (r.data.text || '').split(/\r?\n/).filter(l => l.trim()).forEach(l => lines.push(l));
+  };
+  try{
+    try{ await worker.setParameters({tessedit_pageseg_mode: '11'}); }catch(e){}
+    if(/\.pdf$/i.test(file.name)){
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+      for(let pg = 1; pg <= Math.min(pdf.numPages, 2); pg++){
+        const page = await pdf.getPage(pg);
+        const vp = page.getViewport({scale: 2.5});
+        const cv = document.createElement('canvas');
+        cv.width = vp.width; cv.height = vp.height;
+        await page.render({canvasContext: cv.getContext('2d'), viewport: vp}).promise;
+        feed(await worker.recognize(cv));
+      }
+    } else {
+      feed(await worker.recognize(file));
+    }
+  } finally {
+    try{ await worker.terminate(); }catch(e){}
+  }
+  return {pages, lines};
+}
+async function readKarname(){
+  const f = $('kfile').files[0];
+  if(!f){ toast('ابتدا کارنامه را انتخاب کنید'); return; }
+  const prev = $('scanStatus').innerHTML;
+  $('kBtn').disabled = true;
+  let usedOcr = false, pages = [], rawLines = [];
+  try{
+    if(/\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name)){
+      const o = await ocrTokens(f); pages = o.pages; rawLines = o.lines; usedOcr = true;
+    } else if(/\.pdf$/i.test(f.name)){
+      pages = await pdfTokens(f);
+      if(!pages.some(p => p.tokens.length)){
+        const o = await ocrTokens(f); pages = o.pages; rawLines = o.lines; usedOcr = true;
+      } else {
+        rawLines = pages.flatMap(p => p.tokens.map(t => t.t));
+      }
+    } else {
+      const lines = (await f.text()).split(/\r?\n/);
+      const tokens = [];
+      lines.forEach((l,i) => cityKey(l).split(' ').forEach((w,k) => tokens.push({t:w, x:-k, y:i})));
+      pages = [{tokens, tol:0.4}]; rawLines = lines;
+    }
+    const r = parseKarname(pages);
+    const msgs = [];
+    if(r.gender){ gender = r.gender; $('gender').value = gender; msgs.push('جنسیت: ' + r.gender); }
+    const apply = (g, arr) => {
+      GROUPS.find(x => x.id === g).cats.forEach((cid, i) => { perm[g][cid] = arr[i] === 'no' ? 'no' : 'ok'; });
+      const bad = GROUPS.find(x => x.id === g).cats.filter((cid, i) => arr[i] === 'no').map(cid => CATS.find(c => c.id === cid).short);
+      msgs.push(GROUPS.find(x => x.id === g).name + ': ' + (bad.length ? 'غیرمجاز برای ' + bad.join('، ') : 'همه مجاز'));
+    };
+    if(r.exam) apply('exam', r.exam);
+    if(r.noexam) apply('noexam', r.noexam);
+    buildPerm(); saveKar(); applyFlags();
+    let st = (r.exam && r.noexam)
+      ? 'خوانده شد — ' + msgs.join(' | ') + ' — لطفاً یک بار با کارنامه مقایسه کنید.'
+      : (msgs.length ? 'فقط بخشی خوانده شد (' + msgs.join(' | ') + '). بقیه را دستی تنظیم کنید.' : 'جدول وضعیت مجاز پیدا نشد. گزینه‌های زیر را دستی تنظیم کنید.');
+    if(usedOcr) st += ' (متن از روی عکس با تشخیص خودکار خوانده شد و ممکن است خطا داشته باشد.)';
+    $('kStatus').textContent = st;
+    $('kLines').textContent = msgs.join('\n') + '\n\n' + rawLines.slice(0,60).join('\n');
+  }catch(err){
+    $('kStatus').textContent = 'خطا: ' + err.message;
+  }finally{
+    $('scanStatus').innerHTML = prev;
+    $('kBtn').disabled = false;
+  }
+}
+$('kBtn').addEventListener('click', readKarname);
+$('gender').addEventListener('change', () => { gender = $('gender').value; saveKar(); applyFlags(); });
+$('useKar').addEventListener('change', () => {
+  useKar = $('useKar').checked; $('karWrap').classList.toggle('off', !useKar);
+  saveKar(); applyFlags();
+  toast(useKar ? 'کارنامه فعال شد' : 'کارنامه خاموش شد');
+});
+
+loadKar();
+buildPerm();
+loadAll();
+renderExc();
+render();
+runSearch();
+})();
+</script>
+</body>
+</html>
